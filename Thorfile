@@ -1,8 +1,9 @@
 user_name = ENV['LOGNAME']
 $app_name = "nodejs"
 
+$app_container = "#{user_name}/#{$app_name}"
 $app_image = "#{user_name}/#{$app_name}"
-$app_container_image = "#{user_name}/#{$app_name}"
+$app_container_name = "#{user_name}-#{$app_name}"
 
 $config_container = "#{$app_name}config"
 $config_image = "#{user_name}/#{$config_container}"
@@ -19,6 +20,7 @@ $docker = ". #{Dir.pwd}/docker.rc; docker" if File.file?("#{Dir.pwd}/docker.rc")
 
 $domain = "docker.szz.chtw.de"
 $env = "dev"
+$port = "9180"
 
 # Name:	dhcp-box.sinner-schrader.de
 # $dns = "192.168.6.145"
@@ -118,27 +120,27 @@ EOM"
   end
 
   desc 'app_start', "run #{$app_name}"
-  def container_start
-    run "#{$docker} run -d --net=host --volumes-from #{$config_container_name} --volumes-from #{$data_container_name} --name #{$app_container_name} -P #{$app_image}"
+  def app_start
+    run "#{$docker} run -d --net=host --volumes-from #{$config_container_name} --volumes-from #{$data_container_name} --name #{$app_container_name} -p #{$port}:8080 #{$app_image}"
   end
 
   desc 'app_kill', "Kill #{$app_name}"
   def app_kill
-    run "#{$docker} stop #{$app_name}"
+    run "#{$docker} stop #{$app_container_name}"
     sleep 10
-    run "#{$docker} kill #{$app_name}"
-    run "#{$docker} rm   #{$app_name}"
+    run "#{$docker} kill #{$app_container_name}"
+    run "#{$docker} rm   #{$app_container_name}"
   end
 
   desc 'show_samplecall', "show how to use #{$app_name}"
   def show_samplecall
-    ssh_host = "#{$app_name}.#{$env}.#{$domain}"
-    ssh_hostip = `dig +short @#{$dns} #{ssh_host}`.chomp
-    ssh_port = `#{$docker} port sshd 22`.split(':')[1].chomp
-    docker_host = `. ../env.source;echo $DOCKER_HOST`.split('/')[2].split(':')[0]
-    puts "ssh -p #{ssh_port} root@#{ssh_host}"
-    puts "ssh -p #{ssh_port} root@#{ssh_hostip}"
-    puts "ssh -p #{ssh_port} root@#{docker_host}"
+#    ssh_host = "#{$app_name}.#{$env}.#{$domain}"
+#    ssh_hostip = `dig +short @#{$dns} #{ssh_host}`.chomp
+#    ssh_port = `#{$docker} port sshd 22`.split(':')[1].chomp
+#    docker_host = `. ../env.source;echo $DOCKER_HOST`.split('/')[2].split(':')[0]
+#    puts "ssh -p #{ssh_port} root@#{ssh_host}"
+#    puts "ssh -p #{ssh_port} root@#{ssh_hostip}"
+#    puts "ssh -p #{ssh_port} root@#{docker_host}"
   end
 
 end

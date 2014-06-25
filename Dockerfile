@@ -23,4 +23,10 @@ RUN wget -O - "http://keyserver.ubuntu.com:11371/pks/lookup?op=get&search=0xB931
 RUN apt-get -qq update
 RUN apt-get -y install nodejs
 
-CMD /bin/bash
+# Bundle app source
+ADD /src /src
+# Install app dependencies
+RUN cd /src; npm install
+
+EXPOSE  8080
+CMD ["node", "/src/index.js"]
